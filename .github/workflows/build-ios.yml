@@ -62,6 +62,7 @@ jobs:
 
     steps:
       - name: Clone private source
+        working-directory: ${{ github.workspace }}
         env:
           SOURCE_TOKEN: ${{ secrets.SOURCE_TOKEN }}
         run: |
