@@ -287,7 +287,7 @@ jobs:
           ldid -S"${PWD}/entitlements.trollstore.xml" \
             /tmp/trollstore/Payload/AngelAuraAmethyst.app/AngelAuraAmethyst
           (cd /tmp/trollstore && zip --symlinks -r \
-            "${GITHUB_WORKSPACE}/artifacts/Amethyst-trollstore.tipa" Payload)
+            "${GITHUB_WORKSPACE}/src/artifacts/Amethyst-trollstore.tipa" Payload)
           echo "trollstore package: $(du -h artifacts/Amethyst-trollstore.tipa | cut -f1)"
 
       - name: Upload build artifacts
