@@ -29,6 +29,10 @@ on:
         description: "Release tag containing ios-jre-pack.zip (empty = skip)"
         type: string
         default: ""
+      jre25_url:
+        description: "Optional iOS arm64 JRE 25 archive (.tar.xz) to bundle when the upstream IPA lacks it"
+        type: string
+        default: "https://github.com/catsruledogs/JRE25/releases/download/JRE25/jre25-ios-arm64-20260509-release.tar.xz"
       signing_cert_p12:
         description: "Optional: base64 of an Apple signing certificate (.p12). When set, the IPA is codesigned with it."
         type: string
@@ -117,6 +121,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           UPSTREAM_TOKEN: ${{ secrets.UPSTREAM_TOKEN }}
           JRE_PACK_RELEASE: ${{ inputs.jre_pack_release }}
+          JRE25_URL: ${{ inputs.jre25_url }}
           UPSTREAM_REPO: AngelAuraMC/Amethyst-iOS
         run: |
           set -euo pipefail
@@ -183,6 +188,18 @@ jobs:
                 cp -R "/tmp/jre${v}/jre${v}-openjdk" "depends/java-${v}-openjdk"
               done
             fi
+          fi
+
+          # Java 25 ships with Minecraft 26.3, but the upstream nightly IPA still
+          # only carries 8/17/21. Fetch a community-built iOS arm64 JRE 25.
+          if [ ! -f "depends/java-25-openjdk/release" ] && [ -n "${JRE25_URL:-}" ]; then
+            echo "Java 25 fallback: ${JRE25_URL}"
+            curl -fSL --retry 5 --retry-delay 3 -m 900 -o /tmp/jre25.tar.xz "${JRE25_URL}"
+            rm -rf depends/java-25-openjdk
+            mkdir -p depends/java-25-openjdk
+            tar -xJf /tmp/jre25.tar.xz -C depends/java-25-openjdk
+            test -f depends/java-25-openjdk/release
+            echo "Java 25 runtime installed"
           fi
 
           echo "--- runtimes available in depends ---"
